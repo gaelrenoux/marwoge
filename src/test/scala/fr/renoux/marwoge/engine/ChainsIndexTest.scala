@@ -30,4 +30,29 @@ class ChainsIndexTest extends TestBase {
     }
   }
 
+
+  "Accentuated characters" in {
+    val io = Resources.inputStreamFromClasspath("spanish-male-names.txt")
+    val builder = ChainsIndex.Builder(infixLength = 2)
+    try {
+      WordReader.consume(io)(builder.index)
+    } finally {
+      io.close()
+    }
+
+    val index = builder.toIndex
+    index.infixSize should be(2)
+    index.prefixes.size should be(142)
+
+    println(index.existingWords.mkString("Existing: ", " ", ""))
+    println(index.prefixes.mkString("Prefixes: ", " ", ""))
+
+    index.infixes.foreach { (prefix, values) =>
+      val valuesAsString = values.map {
+        case None => "-"
+        case Some(char) => char.toString
+      }
+      println(s"$prefix: ${valuesAsString.mkString(" ")}")
+    }
+  }
 }
