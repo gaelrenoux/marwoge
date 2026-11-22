@@ -9,12 +9,13 @@ import scala.util.Random
 class WordGenerator(
     val index: ChainsIndex,
     val minLength: Int,
-    val maxLength: Int // soft max, we still need to stop somewhere possible
+    val maxLength: Int, // soft max, we still need to stop somewhere possible
+    excludeExistingWords: Boolean = true
 ) {
 
   /**   */
   @tailrec
-  final def generateWord(excludeExistingWords: Boolean = true, attempts: Int = 1000)(using rand: Random): String = {
+  final def generateWord(attempts: Int = 1000)(using rand: Random): String = {
 
     val prefix = rand.pick(index.prefixes)
 
@@ -48,7 +49,7 @@ class WordGenerator(
     val word = currentWord.toString
     if (word.length < minLength || (excludeExistingWords && index.existingWords.contains(word))) {
       if (attempts >= 0) {
-        generateWord(excludeExistingWords, attempts - 1)
+        generateWord(attempts - 1)
       } else {
         throw new IllegalStateException
       }

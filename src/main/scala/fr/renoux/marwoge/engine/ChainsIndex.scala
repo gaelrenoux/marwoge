@@ -12,6 +12,9 @@ final case class ChainsIndex(
     existingWords: SortedSet[String]
 ) {
   val infixSize: Int = infixes.keys.head.length
+
+  val minWordLength: Int = existingWords.view.map(_.length).min
+  val maxWordLength: Int = existingWords.view.map(_.length).max
 }
 
 object ChainsIndex {

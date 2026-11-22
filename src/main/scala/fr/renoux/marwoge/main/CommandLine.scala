@@ -1,4 +1,4 @@
-package fr.renoux.marwoge.command
+package fr.renoux.marwoge.main
 
 import fr.renoux.gaston.BuildInfo
 import scopt.Read
@@ -10,10 +10,13 @@ import scala.util.Random
 final case class CommandLine(
     inputFile: Path = Path.of(""),
     generationCount: Int = 0,
+    capitalize: Boolean = false,
     minGeneratedLength: Option[Int] = None,
     maxGeneratedLength: Option[Int] = None,
-    minGeneratedLengthMultiplier: Option[Double] = None,
-    maxGeneratedLengthMultiplier: Option[Double] = None,
+    minGeneratedLengthMultiplier: Double = 1,
+    maxGeneratedLengthMultiplier: Double = 1,
+    infixLength: Int = 3,
+    prefixLength: Int = 2,
     debug: Boolean = false,
     seed: Long = Random.nextLong(),
 )
@@ -33,21 +36,33 @@ object CommandLine {
         .action { (count, in) => in.copy(generationCount = count) }
         .text("How many words to generate")
 
+    opt[Unit]('C', "capitalize").optional()
+        .action((_, in) => in.copy(capitalize = true))
+        .text("Capitalize the first letter of each word")
+
     opt[Int]('m', "min-length").optional().valueName("<length>")
         .action((length, in) => in.copy(minGeneratedLength = Some(length)))
-        .text("Minimum length of generated words")
+        .text("Minimum length of generated words (has priority over min-length-multiplier)")
 
     opt[Int]('x', "max-length").optional().valueName("<length>")
         .action((length, in) => in.copy(maxGeneratedLength = Some(length)))
-        .text("Maximum length of generated words")
+        .text("Maximum length of generated words (has priority over max-length-multiplier)")
 
     opt[Double]('M', "min-length-multiplier").optional().valueName("<multiplier>")
-        .action((multiplier, in) => in.copy(minGeneratedLengthMultiplier = Some(multiplier)))
-        .text("Multiplier on the found value for the minimum length of generated words")
+        .action((multiplier, in) => in.copy(minGeneratedLengthMultiplier = multiplier))
+        .text("Multiplier on the found value for the minimum length of generated words (default is 1)")
 
     opt[Double]('X', "max-length-multiplier").optional().valueName("<multiplier>")
-        .action((multiplier, in) => in.copy(maxGeneratedLengthMultiplier = Some(multiplier)))
-        .text("Multiplier on the found value for the maximum length of generated words")
+        .action((multiplier, in) => in.copy(maxGeneratedLengthMultiplier = multiplier))
+        .text("Multiplier on the found value for the maximum length of generated words (default is 1)")
+
+    opt[Int]("prefix-length").optional().valueName("<length>")
+        .action((length, in) => in.copy(prefixLength = length))
+        .text("Length to use for prefixes in the Markov index (ie, the length of the starting state)")
+
+    opt[Int]("infix-length").optional().valueName("<length>")
+        .action((length, in) => in.copy(infixLength = length))
+        .text("Length to use for infixes in the Markov index (ie, the max length of the state)")
 
     opt[Unit]("debug").optional()
         .action((_, in) => in.copy(debug = true))
