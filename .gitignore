@@ -1,0 +1,33 @@
+### Scala ###
+*.class
+*.log
+
+# sbt
+dist/*
+target/
+lib_managed/
+src_managed/
+project/target/
+project/project/target/
+.history
+.cache
+.lib
+
+# Bloop/Metals/BSP
+.bloop
+.bsp
+.metals
+project/metals.sbt
+project/**/metals.sbt
+
+
+### Intellij ###
+# Ignore everything except formatting configuration
+.idea/*
+!.idea/codeStyles
+.idea/codeStyles/*
+!.idea/codeStyles/Project.xml
+
+
+### VS Code ###
+.vscode

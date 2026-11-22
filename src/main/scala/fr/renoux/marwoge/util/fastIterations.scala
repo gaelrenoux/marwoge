@@ -1,0 +1,225 @@
+package fr.renoux.marwoge.util
+
+import scala.reflect.ClassTag
+
+/** Simple generic loop */
+inline def fastLoop[A](inline start: A, inline condition: A => Boolean, inline advance: A => A)(
+    inline loopBody: A => Any
+): Unit = {
+  var a = start
+  while (condition(a)) {
+    loopBody(a)
+    a = advance(a)
+  }
+}
+
+/** Simple loop for ranges */
+inline def fastLoop(inline start: Int, inline until: Int, inline advance: Int => Int = _ + 1)(
+    inline loopBody: Int => Any
+): Unit = {
+  var i = start
+  while (i < until) {
+    loopBody(i)
+    i = advance(i)
+  }
+}
+
+/** Loop that stops when it found a match. */
+inline def fastExists(inline start: Int, inline until: Int, inline advance: Int => Int = _ + 1)(
+    inline loopBody: Int => Boolean
+): Boolean = {
+  var i = start
+  var continue = true
+  while (continue && i < until) {
+    if (loopBody(i)) {
+      continue = false
+    } else {
+      i = advance(i)
+    }
+  }
+  !continue
+}
+
+/** Loop that stops when it found the correct integer. Default value is required to avoid using an Option. */
+inline def fastFind(inline start: Int, inline until: Int, inline advance: Int => Int = _ + 1, inline default: Int = -1)(
+    inline loopBody: Int => Boolean
+): Int = {
+  var i = start
+  var continue = true
+  while (continue && i < until) {
+    if (loopBody(i)) {
+      continue = false
+    } else {
+      i = advance(i)
+    }
+  }
+  if (continue) default else i
+}
+
+/** Array extension */
+extension [A](inline as: Array[A]) {
+  inline def fastCopy()(using ClassTag[A]) = {
+    val asl = as.length
+    val res = new Array[A](asl)
+    var ix = 0
+    while (ix < asl) {
+      res(ix) = as(ix)
+      ix += 1
+    }
+    res
+  }
+
+  inline def fastFoldLeft[B](inline init: B)(inline f: (B, A) => B): B = {
+    var res = init
+    val asl = as.length
+    var ix = 0
+    while (ix < asl) {
+      res = f(res, as(ix))
+      ix += 1
+    }
+    res
+  }
+
+  inline def fastFoldRight[B](inline init: B)(inline f: (A, B) => B): B = {
+    var res = init
+    val asl = as.length
+    var ix = asl
+    while (ix > 0) {
+      ix -= 1
+      res = f(as(ix), res)
+    }
+    res
+  }
+
+  inline def fastCount(inline f: A => Boolean): Int = {
+    var res = 0
+    val asl = as.length
+    var ix = 0
+    while (ix < asl) {
+      if (f(as(ix))) {
+        res += 1
+      }
+      ix += 1
+    }
+    res
+  }
+
+  inline def fastExists(inline f: A => Boolean): Boolean = {
+    val asl = as.length
+    var ix = 0
+    var continue = true
+    while (continue && ix < asl) {
+      val a = as(ix)
+      if (f(a)) {
+        continue = false
+      }
+      ix += 1
+    }
+    !continue
+  }
+
+  inline def fastFind(inline default: A)(inline f: A => Boolean): A = {
+    val asl = as.length
+    var ix = 0
+    var continue = true
+    var result = default
+    while (continue && ix < asl) {
+      val a = as(ix)
+      if (f(a)) {
+        continue = false
+        result = a
+      }
+      ix += 1
+    }
+    result
+  }
+
+  inline def fastForeach(inline f: A => Unit): Unit = {
+    val asl = as.length
+    var ix = 0
+    while (ix < asl) {
+      f(as(ix))
+      ix += 1
+    }
+  }
+
+  inline def fastForeachWithIndex(inline f: (A, Int) => Unit): Unit = {
+    val asl = as.length
+    var ix = 0
+    while (ix < asl) {
+      f(as(ix), ix)
+      ix += 1
+    }
+  }
+
+  inline def fastMap[B: ClassTag](inline f: A => B): Array[B] = {
+    val asl = as.length
+    val result = new Array[B](asl)
+    var ix = 0
+    while (ix < asl) {
+      result(ix) = f(as(ix))
+      ix += 1
+    }
+    result
+  }
+
+  inline def fastMapWithIndex[B: ClassTag](inline f: (Int, A) => B): Array[B] = {
+    val asl = as.length
+    val result = new Array[B](asl)
+    var ix = 0
+    while (ix < asl) {
+      result(ix) = f(ix, as(ix))
+      ix += 1
+    }
+    result
+  }
+
+  inline def fastFill(inline a: => A): Unit = {
+    val asl = as.length
+    var ix = 0
+    while (ix < asl) {
+      as(ix) = a
+      ix += 1
+    }
+  }
+
+  inline def fastTabulate(inline f: Int => A): Unit = {
+    val asl = as.length
+    var ix = 0
+    while (ix < asl) {
+      as(ix) = f(ix)
+      ix += 1
+    }
+  }
+}
+
+/** Scala iterable extension */
+extension [A](inline as: Iterable[A]) {
+
+  inline def fastFoldLeft[B](inline init: B)(inline f: (B, A) => B): B = {
+    var res = init
+    val it = as.iterator
+    while (it.hasNext) {
+      res = f(res, it.next())
+    }
+    res
+  }
+
+  inline def fastCount(inline f: A => Boolean): Int = {
+    var res = 0
+    val it = as.iterator
+    while (it.hasNext) {
+      if (f(it.next())) {
+        res += 1
+      }
+    }
+    res
+  }
+
+  inline def fastForeach(inline f: A => Unit): Unit = {
+    val it = as.iterator
+    while (it.hasNext) {
+      f(it.next())
+    }
+  }
+}
